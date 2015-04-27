@@ -64,7 +64,7 @@ def compute_Q(X):
     return Q
 
 def simplex_nnls_eg(AtA, Atb, maxIter = 500):
-    etat = 1000
+    etat = 10
     epsilon = 1e-5
     # initialization
     K = np.size(Atb, 0)
@@ -72,6 +72,45 @@ def simplex_nnls_eg(AtA, Atb, maxIter = 500):
     converge = False
     iterNum = 0
     while not converge:
+        p = 2 * AtA * x - 2 * Atb
+        tmp1 = np.exp(-etat * p)
+        x = np.multiply(x, tmp1)
+        x = x / la.norm(x)
+        pprime = 2 * AtA * x - 2 * Atb
+        lmd = pprime - np.ones((K, 1)) * np.min(pprime)
+        if lmd.T * x < epsilon:
+            converge = True
+        iterNum += 1
+        if iterNum == maxIter:
+            converge = True
+        etat *= 0.99
+    return x, iterNum
 
-        pass
-    pass
+def compute_A(Qn, s, p):
+    Tt = np.matrix(Qn[p, :])
+    AtA = Tt * Tt.T
+    AtB = Tt * Qn.T
+    K = np.size(Tt, 0)
+    V = np.size(Tt, 1)
+    C = np.zeros()
+    maxerr1 = 0
+    maxerr2 = 0
+    titer = 0
+    for i in range(V):
+        Atb = AtB[:, i]
+        x, iter = simplex_nnls_eg(AtA, Atb)
+        C[i, :] = x.T * s[i]
+        # check normalization error
+        maxerr1 = max(maxerr1, abs(sum(x) - 1))
+        r = AtA * x - Atb
+        phi = 2 * (r * min(r)).T * x
+        maxerr2 = max(maxerr2, phi)
+        titer += iter
+    print "Max error:", maxerr1, maxerr2
+    print "Total iteration: ", titer
+    return C / C.sum(0)
+
+def mine_topics(Q, ntopic = 100, nword = 20):
+    Qn = Q / Q.sum(1)
+    print("-- Timing anchor words with partial fact")
+
