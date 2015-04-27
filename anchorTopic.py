@@ -87,19 +87,19 @@ def simplex_nnls_eg(AtA, Atb, maxIter = 500):
     return x, iterNum
 
 def compute_A(Qn, s, p):
-    Tt = np.matrix(Qn[p, :])
+    Tt = Qn[p, :]
     AtA = Tt * Tt.T
     AtB = Tt * Qn.T
     K = np.size(Tt, 0)
     V = np.size(Tt, 1)
-    C = np.zeros()
+    C = np.zeros((V, K))
     maxerr1 = 0
     maxerr2 = 0
     titer = 0
     for i in range(V):
         Atb = AtB[:, i]
         x, iter = simplex_nnls_eg(AtA, Atb)
-        C[i, :] = x.T * s[i]
+        C[i, :] = x.T * s[i].item(0)
         # check normalization error
         maxerr1 = max(maxerr1, abs(sum(x) - 1))
         r = AtA * x - Atb
@@ -112,5 +112,19 @@ def compute_A(Qn, s, p):
 
 def mine_topics(Q, ntopic = 100, nword = 20):
     Qn = Q / Q.sum(1)
+    s = Q.sum(1)
     print("-- Timing anchor words with partial fact")
+    startT = time.time()
+    p, r = choose_anchor_partial(Qn, ntopic)
+    print "--- %s seconds ---" % (time.time() - startT)
+    startT = time.time()
+    print "-- Compute intensities"
+    A = compute_A(Qn, s, p)
+    print "--- %s seconds ---" % (time.time() - startT)
+    startT = time.time()
+    print "-- Find top words per topic"
+    TW = np.argsort(-A, axis=0)
+    print "--- %s seconds ---" % (time.time() - startT)
+    return p, r, A, TW
+
 
