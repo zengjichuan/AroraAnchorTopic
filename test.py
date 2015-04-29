@@ -32,7 +32,7 @@ print msm.todense()
 # compute_A(Qn, s, p)
 
 # test io
-load_uci('nips')
+load_uci('test', min_tf=0.1)
 
 #long running
 endtime = time.time()

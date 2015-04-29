@@ -47,22 +47,6 @@ def choose_anchor_partial(A, k):
         cnorm2 = cnorm2 - np.square(A * np.matrix(Q[j, :]).T)
     return p, r
 
-# X_(i,j) denotes doc i in word j
-def compute_Q(X):
-    print 'Forming Q'
-    nd = X.sum(1)
-
-    # Compute the matrices and sum across documents to get Hhat
-    scaling = np.multiply(nd, nd - 1)
-    Hdt = X / scaling
-    Hdtd = Hdt.sum(0)
-
-    scaling = np.sqrt(np.multiply(nd, nd - 1))
-    Hdw = X / scaling
-    Q = Hdw.T * Hdw - ss.diags(np.squeeze(np.asarray(Hdtd)), 0)
-    Q = ss.csc_matrix(Q / Q.sum(1))
-    return Q
-
 def simplex_nnls_eg(AtA, Atb, maxIter = 500):
     etat = 10
     epsilon = 1e-5
