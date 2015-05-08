@@ -32,22 +32,13 @@ def choose_anchor_partial(A, k):
     r = np.zeros(k)
     for j in range(k):
         p[j] = np.argmax(cnorm2)
-        # tmp1 = A.getrow(p[j])
-        # tmp2 = np.matrix(Q[0:j, :]).T
-        # tmp3 = tmp1 * tmp2
-        # tmp4 = tmp3 * np.matrix(Q[0:j, :])
-        # Q[j, :] = tmp1 - tmp4
         Q[j, :] = A.getrow(p[j]) - (A.getrow(p[j]) * np.matrix(Q[0:j, :]).T) * np.matrix(Q[0:j, :])
         r[j] = la.norm(Q[j, :])
         Q[j, :] = Q[j, :] / r[j]
-        # tmp5 = np.matrix(Q[j, :]).T
-        # tmp6 = A * tmp5
-        # tmp7 = np.square(tmp6)
-        # cnorm2 = cnorm2 - tmp7
         cnorm2 = cnorm2 - np.square(A * np.matrix(Q[j, :]).T)
     return p, r
 
-def simplex_nnls_eg(AtA, Atb, maxIter = 500):
+def simplex_nnls_eg(AtA, Atb, maxIter = 100):
     etat = 10
     epsilon = 1e-5
     # initialization
@@ -55,8 +46,8 @@ def simplex_nnls_eg(AtA, Atb, maxIter = 500):
     x = np.ones((K, 1)) / K
     converge = False
     iterNum = 0
+    p = 2 * AtA * x - 2 * Atb
     while not converge:
-        p = 2 * AtA * x - 2 * Atb
         tmp1 = np.exp(-etat * p)
         x = np.multiply(x, tmp1)
         x = x / la.norm(x)
@@ -68,6 +59,7 @@ def simplex_nnls_eg(AtA, Atb, maxIter = 500):
         if iterNum == maxIter:
             converge = True
         etat *= 0.99
+        p = pprime
     return x, iterNum
 
 def compute_A(Qn, s, p):
@@ -95,7 +87,7 @@ def compute_A(Qn, s, p):
     return C / C.sum(0)
 
 def mine_topics(Q, ntopic = 100, nword = 20):
-    Qn = Q / Q.sum(1)
+    Qn = ss.csr_matrix(Q / Q.sum(1))
     s = Q.sum(1)
     print("-- Timing anchor words with partial fact")
     startT = time.time()

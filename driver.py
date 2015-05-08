@@ -8,4 +8,4 @@ def driver_uci(basename, min_tf=0, min_tfidf=0, ntopic=100):
     (p, r, A, TW) = mine_topics(Q, ntopic)
     write_topics('topics_%s.txt' % basename, vocab, p, r, A, TW)
 
-driver_uci('nips', min_tf=10)
+driver_uci('test', min_tf=10)

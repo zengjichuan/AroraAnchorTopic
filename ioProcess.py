@@ -37,7 +37,7 @@ def compute_Q(X):
     scaling = np.sqrt(np.multiply(nd, nd - 1))
     Hdw = X / scaling
     Q = Hdw.T * Hdw - ss.diags(np.squeeze(np.asarray(Hdtd)), 0)
-    Q = ss.csc_matrix(Q / Q.sum(1))
+    # Q = ss.csc_matrix(Q / Q.sum(1))
     return Q
 
 def trim_vacab(vocab, docs, words, V, min_tf=0, min_tfidf=0):
